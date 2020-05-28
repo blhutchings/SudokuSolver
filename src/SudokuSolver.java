@@ -1,24 +1,43 @@
 import java.awt.*;
 
 public class SudokuSolver {
-    private byte[][] board;
+    private final byte[][] board;
     private SudokuFrame frame;
-    private boolean showUpdates;
+    private final boolean showUpdates;
 
+    /**
+     * Constructor
+     * @param board The input sudoku
+     */
     public SudokuSolver(byte[][] board) {
         this.board = board;
+        showUpdates = false;
     }
 
+    /**
+     * Constructor
+     * @param board The input sudoku
+     * @param frame The frame which will be used
+     * @param updates Whether or not it will update the GUI as it solves
+     */
     public SudokuSolver(byte[][] board, SudokuFrame frame, boolean updates) {
         this.frame = frame;
         this.board = board;
         this.showUpdates = updates;
     }
 
+    /**
+     * Whether the board can be solved
+     * @return boolean
+     */
     public boolean solve() {
-        return this.checkBoard() ? this.solver() : false;
+        return this.checkBoard() && this.solver();
     }
 
+    /**
+     * Solve helper method
+     * @return boolean Whether the board can be solved
+     */
     private boolean solver() {
         Point tile = this.findEmpty();
         if (tile.getY() == -1.0D) {
@@ -26,8 +45,10 @@ public class SudokuSolver {
         } else {
             for(byte i = 1; i <= 9; ++i) {
                 this.board[(byte)((int)tile.getX())][(byte)((int)tile.getY())] = i;
+
+                //If showing the backtracking is enabled
                 if (this.showUpdates) {
-                    this.frame.setDigit((int)tile.getX(), (int)tile.getY(), i);
+                    this.frame.setDigit((int)tile.getX(), (int)tile.getY(), ""+i);
                 }
 
                 if (this.examine((byte)((int)tile.getX()), (byte)((int)tile.getY()))) {
@@ -36,8 +57,10 @@ public class SudokuSolver {
                     }
                 } else {
                     this.board[(byte)((int)tile.getX())][(byte)((int)tile.getY())] = 0;
+
+                    //If showing the backtracking is enabled
                     if (this.showUpdates) {
-                        this.frame.setDigit((int)tile.getX(), (int)tile.getY(), 0);
+                        this.frame.setDigit((int)tile.getX(), (int)tile.getY(), "");
                     }
                 }
             }
@@ -47,6 +70,10 @@ public class SudokuSolver {
         }
     }
 
+    /**
+     * Attempts to find an empty tile
+     * @return Point If -1, no point is found. Anything else, is the coordinates
+     */
     private Point findEmpty() {
         for(int row = 0; row < 9; ++row) {
             for(int column = 0; column < 9; ++column) {
@@ -59,23 +86,32 @@ public class SudokuSolver {
         return new Point(-1, -1);
     }
 
+    /**
+     *
+     * @param row The row at which will be examined
+     * @param column The column at which will be examined
+     * @return boolean If the current number is valid at that location
+     */
     private boolean examine(byte row, byte column) {
         byte squareRow;
+        byte squareCol;
+        //Checks the row
         for(squareRow = 0; squareRow < 9; ++squareRow) {
             if (squareRow != row && this.getTile(row, column) == this.getTile(squareRow, column)) {
                 return false;
             }
         }
-
-        for(squareRow = 0; squareRow < 9; ++squareRow) {
-            if (squareRow != column && this.getTile(row, column) == this.getTile(row, squareRow)) {
+        //Checks the col
+        for(squareCol = 0; squareCol < 9; ++squareCol) {
+            if (squareCol != column && this.getTile(row, column) == this.getTile(row, squareCol)) {
                 return false;
             }
         }
 
         squareRow = (byte)((byte)(row / 3) * 3);
-        byte squareCol = (byte)((byte)(column / 3) * 3);
+        squareCol = (byte)((byte)(column / 3) * 3);
 
+        //Checks the 3x3 quadrant
         for(byte i = squareRow; i < squareRow + 3; ++i) {
             for(byte j = squareCol; j < squareCol + 3; ++j) {
                 if (i != row && j != column && this.getTile(row, column) == this.getTile(i, j)) {
@@ -87,6 +123,10 @@ public class SudokuSolver {
         return true;
     }
 
+    /**
+     * Checks to see if its even a valid board before completing
+     * @return boolean If its a valid board
+     */
     private boolean checkBoard() {
         for(int i = 0; i < 9; ++i) {
             for(int j = 0; j < 9; ++j) {
@@ -98,11 +138,13 @@ public class SudokuSolver {
 
         return true;
     }
-
     public byte getTile(byte row, byte column) {
         return this.board[row][column];
     }
 
+    /**
+     * Prints board into console
+     */
     public void print() {
         for(int i = 0; i < 9; ++i) {
             System.out.println();
